@@ -27,6 +27,12 @@ drop.get("hello", String.parameter) {
 }
 
 
+drop.get("hello", String.parameter) {
+    req -> String in
+    let name = try req.parameters.next(String.self)
+    return "Hello, \(name)!"
+}
+
 
 drop.post("callback") { request in
     let bot = LineBot(accessToken: accessToken, channelSecret: channelSecret)
