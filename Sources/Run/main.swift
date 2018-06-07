@@ -4,7 +4,7 @@
 
 // ============================================================
 
-
+import Foundation
 import Vapor
 import LineBot
 import Jobs
@@ -19,6 +19,7 @@ let accessToken = "OoFdWpqFaiTweCAZ78pVaxcGsNJrzBob0MFrQxHjbmFZmf3Hf1Mr0Z3Rt+CNd
 let channelSecret = "496c110eb6db3d1af4918c41647b45ab"
 
 var selfID: String = "U29629efc0ba592585e9130f618f0c0c7"
+var echoString = ""
 
 
 let drop = try Droplet()
@@ -29,7 +30,7 @@ let bot = LineBot(accessToken: accessToken, channelSecret: channelSecret)
 // 設置一個 job 每 10 秒 say Hello !!
 let helloJob = Jobs.add(interval: 10.seconds, autoStart: false) {
     if selfID != nil {
-        bot.push(userId: selfID, messages: [.text(text: "👋 Hello !!!")])
+        bot.push(userId: selfID, messages: [.text(text: echoString)])
     }
 }
 
@@ -78,12 +79,24 @@ drop.post("callback") { request in
             case .text(let content):
                 
                 if content.text == "startJob" {
+                    
                     helloJob.start()
+                    bot.reply(token: replyToken, messages: [.text(text: "開啟回音 Bot")])
+                    
                 } else if content.text == "stopJob" {
+                    
                     helloJob.stop()
-                } else if content.text == "setting user" {
-                    let user = message.source.userId
-                    bot.reply(token: replyToken, messages: [.text(text: "已設定 ID：\(user)")])
+                    bot.reply(token: replyToken, messages: [.text(text: "關閉回音 Bot")])
+                    
+                } else if content.text.contains("-set echo:") {
+                    
+                    let id = message.source.userId
+                    bot.reply(token: replyToken, messages: [.text(text: "已設定 ID：\(id)")])
+                    
+                    let userMsg = content.text
+                    let endString = userMsg.suffix(10)
+                    echoString = String(endString)
+
                 }
                 
 //                bot.reply(token: replyToken, messages: [.text(text: content.text)])
