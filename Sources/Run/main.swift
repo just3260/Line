@@ -28,10 +28,8 @@ let bot = LineBot(accessToken: accessToken, channelSecret: channelSecret)
 
 
 // 設置一個 job 每 10 秒 say Hello !!
-let helloJob = Jobs.add(interval: 10.seconds, autoStart: false) {
-    if selfID != nil {
-        bot.push(userId: selfID, messages: [.text(text: echoString)])
-    }
+let helloJob = Jobs.add(interval: 60.seconds, autoStart: false) {
+    bot.push(userId: selfID, messages: [.text(text: echoString)])
 }
 
 
@@ -78,28 +76,28 @@ drop.post("callback") { request in
             switch message.message {
             case .text(let content):
                 
-                if content.text == "startJob" {
+                if content.text == "start job" {
                     
                     helloJob.start()
                     bot.reply(token: replyToken, messages: [.text(text: "開啟回音 Bot")])
                     
-                } else if content.text == "stopJob" {
+                } else if content.text == "stop job" {
                     
                     helloJob.stop()
                     bot.reply(token: replyToken, messages: [.text(text: "關閉回音 Bot")])
                     
                 } else if content.text.contains("-set echo:") {
                     
+                    let userMsg = content.text
+                    let index = userMsg.index(userMsg.startIndex, offsetBy: 10)
+                    let endString = String(userMsg[index...])
+                    echoString = endString
+                    
                     let id = message.source.userId
                     bot.reply(token: replyToken, messages: [.text(text: "已設定 ID：\(id)")])
                     
-                    let userMsg = content.text
-                    let endString = userMsg.suffix(10)
-                    echoString = String(endString)
-
                 }
                 
-//                bot.reply(token: replyToken, messages: [.text(text: content.text)])
             case _:
                 break
             }
