@@ -2,21 +2,30 @@
 //
 //try app(.detect()).run()
 
-
-
-
-
 // ============================================================
+
 
 import Vapor
 import LineBot
-
+import Jobs
 
 let accessToken = "uNha8IMsykz/XoGmQhuWyvqVc6Ta36vi1yVCx16jH6Dfwu17iaJrQXZqipY8fgvMrxrxvtNcRKpVpmP/XyUtewpgpm40oQFxPSbaZDUbqb+mKSydSvjDgtbBxnKD+w/VrLugyzamDrBmgG7lw4lV/wdB04t89/1O/w1cDnyilFU="
 let channelSecret = "2350b45a5aab2f3fd5767dcc5ed4e749"
+var selfID: String!
 
 
 let drop = try Droplet()
+
+let bot = LineBot(accessToken: accessToken, channelSecret: channelSecret)
+
+
+// 設置一個 job 每 10 秒 say Hello !!
+let helloJob = Jobs.add(interval: 10.seconds, autoStart: false) {
+    if selfID != nil {
+        bot.push(userId: selfID, messages: [.text(text: "👋 Hello !!!")])
+    }
+}
+
 
 
 drop.get("hello", String.parameter) {
@@ -34,7 +43,6 @@ drop.get("hello", String.parameter) {
 
 
 drop.post("callback") { request in
-    let bot = LineBot(accessToken: accessToken, channelSecret: channelSecret)
     
     guard let content = request.body.bytes?.makeString() else {
         return Response(status: .badRequest)
@@ -53,22 +61,45 @@ drop.post("callback") { request in
     }
     
     for event in events {
+        
         switch event {
         case .message(let message):
             let replyToken = message.replyToken
+            
+            // 單一訊息
             switch message.message {
             case .text(let content):
-                bot.reply(token: replyToken, messages: [.text(text: content.text)])
+                
+                if content.text == "startJob" {
+                    helloJob.start()
+                } else if content.text == "stopJob" {
+                    helloJob.stop()
+                } else if content.text == "setting user" {
+                    selfID = message.source.userId
+                    bot.reply(token: replyToken, messages: [.text(text: "已設定 ID：\(selfID)")])
+                }
+                
+//                bot.reply(token: replyToken, messages: [.text(text: content.text)])
             case _:
                 break
             }
+            
         case _:
             break
         }
+        
     }
     
     return Response(status: .ok)
 }
 
 
+
+
+
+
 try drop.run()
+
+
+
+
