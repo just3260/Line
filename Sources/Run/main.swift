@@ -11,7 +11,7 @@ import Jobs
 
 let accessToken = "uNha8IMsykz/XoGmQhuWyvqVc6Ta36vi1yVCx16jH6Dfwu17iaJrQXZqipY8fgvMrxrxvtNcRKpVpmP/XyUtewpgpm40oQFxPSbaZDUbqb+mKSydSvjDgtbBxnKD+w/VrLugyzamDrBmgG7lw4lV/wdB04t89/1O/w1cDnyilFU="
 let channelSecret = "2350b45a5aab2f3fd5767dcc5ed4e749"
-var selfID: String!
+var selfID: String = "U29629efc0ba592585e9130f618f0c0c7"
 
 
 let drop = try Droplet()
@@ -75,8 +75,8 @@ drop.post("callback") { request in
                 } else if content.text == "stopJob" {
                     helloJob.stop()
                 } else if content.text == "setting user" {
-                    selfID = message.source.userId
-                    bot.reply(token: replyToken, messages: [.text(text: "已設定 ID：\(selfID)")])
+                    let user = message.source.userId
+                    bot.reply(token: replyToken, messages: [.text(text: "已設定 ID：\(user)")])
                 }
                 
 //                bot.reply(token: replyToken, messages: [.text(text: content.text)])
